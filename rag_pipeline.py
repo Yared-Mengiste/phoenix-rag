@@ -40,7 +40,8 @@ class RagPipeline:
     ):
         self.vector_store = vector_store
         self.retrieval_config = retrieval_config
-        self._client = Mistral(mistral_settings)
+        self._client = Mistral(api_key=mistral_settings.api_key)
+        self._model = mistral_settings.generation_model
         self._retriever = get_retriever(
             vector_store,
             top_k=retrieval_config.top_k,
@@ -62,10 +63,12 @@ class RagPipeline:
         contexts = [d.page_content for d in docs]
         prompt = self.build_prompt(question, contexts)
 
-        answer_text = self._client.chat(
+        response = self._client.chat.complete(
+            model=self._model,
             messages=[{"role": "user", "content": prompt}],
             temperature=0.2,
         )
+        answer_text = response.choices[0].message.content
         return RagResult(question=question, answer=answer_text, contexts=contexts)
 
     def answer_many(self, questions: list[str]) -> list[RagResult]:

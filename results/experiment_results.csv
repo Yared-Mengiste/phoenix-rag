@@ -1,0 +1,2 @@
+iteration,chunk_size,chunk_overlap,top_k,similarity_threshold,retriever_type,faithfulness,context_recall,context_precision,response_relevancy
+1,1999,150,1,0.0,similarity,0.9,0.9,0.79999999992,0.7567683306776949

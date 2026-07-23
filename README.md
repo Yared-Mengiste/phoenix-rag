@@ -113,23 +113,3 @@ python app.py --source data/my_document.pdf --verbose
 - `results/best_configuration.json` — the best config found so far, updated
   whenever a new best is found
 
-## Notes on switching from Ollama to Mistral
-
-This build uses Mistral for everything — `mistral-embed` for embeddings and
-`mistral-small` for both question generation and RAG answer generation, with
-Ragas + `mistral-small` as the judge — instead of local Ollama, since local
-inference was too slow for iterative optimization. `mistral_client.py`
-centralizes rate limiting and retry logic so the free-tier request limits
-don't cause the optimization loop to fail outright; adjust
-`MistralSettings.requests_per_minute` in `config.py` to match your actual
-plan.
-
-## Extending
-
-- New document types: add a loader to `LOADER_REGISTRY` in `document_loader.py`.
-- New optimization rules: add a branch in `optimizer.propose_next_config`.
-- Different judge/generation models: change `MistralSettings` in `config.py`
-  (or override via a saved config JSON and `--config`).
-- Smarter dedup for generated questions: swap the string-based dedupe in
-  `question_generator._dedupe` for an embedding-similarity comparison using
-  `MistralClient.embed` and `QuestionGenerationConfig.dedup_similarity_threshold`.

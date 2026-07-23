@@ -1,0 +1,3 @@
+iteration,faithfulness,context_recall,context_precision,response_relevancy,applied_rules
+1,0.9,0.9,0.79999999992,0.7567683306776949,
+1,0.9,0.9,0.79999999992,0.7567683306776949,near_target_context_recall: nudge_top_k_up; near_target_context_precision: nudge_similarity_threshold_up; near_target_faithfulness_or_response_relevancy: apply_combined_prompt

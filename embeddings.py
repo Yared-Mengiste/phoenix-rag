@@ -26,15 +26,26 @@ class MistralEmbeddings(Embeddings):
 
     def __init__(self, settings: MistralSettings | None = None):
         self.settings = settings or MistralSettings()
-        self._client = Mistral(self.settings)
+        self._client = Mistral(api_key=self.settings.api_key)
 
     def embed_documents(self, texts: list[str]) -> list[list[float]]:
         vectors: list[list[float]] = []
         for i in range(0, len(texts), _MAX_BATCH):
             batch = texts[i : i + _MAX_BATCH]
             logger.debug("Embedding batch %d-%d of %d", i, i + len(batch), len(texts))
-            vectors.extend(self._client.embed(batch))
+            response = self._client.embeddings.create(
+                model=self.settings.embedding_model,
+                inputs=batch,
+            )
+            # The API is expected to preserve input order, but sort by the
+            # response's own index to be safe rather than assume it.
+            ordered = sorted(response.data, key=lambda d: d.index)
+            vectors.extend(d.embedding for d in ordered)
         return vectors
 
     def embed_query(self, text: str) -> list[float]:
-        return self._client.embed([text])[0]
+        response = self._client.embeddings.create(
+            model=self.settings.embedding_model,
+            inputs=[text],
+        )
+        return response.data[0].embedding

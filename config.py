@@ -127,10 +127,10 @@ class QuestionGenerationConfig:
 class OptimizerConfig:
     max_iterations: int = 10
     # Stop early if all metrics are >= these targets
-    target_faithfulness: float = 0.85
-    target_context_recall: float = 0.85
-    target_context_precision: float = 0.85
-    target_response_relevancy: float = 0.85
+    target_faithfulness: float = 0.95
+    target_context_recall: float = 0.95
+    target_context_precision: float = 0.95
+    target_response_relevancy: float = 0.95
 
     # Thresholds below which a metric is considered "low" and triggers a rule
     low_faithfulness_threshold: float = 0.7

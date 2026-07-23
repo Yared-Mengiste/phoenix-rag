@@ -18,6 +18,9 @@ from pathlib import Path
 
 from config import LOGS_DIR, load_or_create_default_config
 from experiment_runner import run_experiment
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 def _setup_logging(verbose: bool) -> None:

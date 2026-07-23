@@ -94,19 +94,22 @@ def _generate_for_batch(
     client: Mistral,
     batch_text: str,
     qg_config: QuestionGenerationConfig,
+    mistral_settings: MistralSettings,
 ) -> list[BenchmarkQuestion]:
     system = SYSTEM_PROMPT.format(question_types=", ".join(qg_config.question_types))
     user = (
         f"Generate {qg_config.questions_per_batch} questions from this text:\n\n"
         f"{batch_text}"
     )
-    raw = client.chat(
+    response = client.chat.complete(
+        model=mistral_settings.generation_model,
         messages=[
             {"role": "system", "content": system},
             {"role": "user", "content": user},
         ],
         temperature=0.4,
     )
+    raw = response.choices[0].message.content
     items = _parse_llm_json(raw)
 
     questions = []
@@ -123,7 +126,6 @@ def _generate_for_batch(
         except (KeyError, TypeError):
             logger.warning("Skipping malformed question item: %s", item)
     return questions
-
 
 def _dedupe(questions: list[BenchmarkQuestion]) -> list[BenchmarkQuestion]:
     """Remove exact/near-exact duplicate questions (case/whitespace-insensitive).
@@ -149,7 +151,7 @@ def generate_benchmark(
     qg_config: QuestionGenerationConfig,
 ) -> list[BenchmarkQuestion]:
     """Generate the full benchmark question set from the complete document."""
-    client = Mistral(mistral_settings)
+    client = Mistral(api_key=mistral_settings.api_key)
     batches = _batch_text(full_text, qg_config.batch_size_chars)
     logger.info("Generating questions from %d batch(es)", len(batches))
 
@@ -157,7 +159,9 @@ def generate_benchmark(
     for i, batch in enumerate(batches, start=1):
         logger.info("Generating questions for batch %d/%d", i, len(batches))
         try:
-            all_questions.extend(_generate_for_batch(client, batch, qg_config))
+            all_questions.extend(
+    _generate_for_batch(client, batch, qg_config, mistral_settings)
+)
         except Exception:
             logger.exception(
                 "Batch %d failed to generate questions; continuing with remaining "

@@ -2,7 +2,7 @@
 evaluator.py
 ============
 Runs Ragas metrics (faithfulness, context_recall, context_precision,
-response_relevancy) over a set of RAG results using Mistral Small as the
+answer_relevancy) over a set of RAG results using Mistral Small as the
 judge LLM and Mistral embeddings as the embedding backend.
 """
 
@@ -14,10 +14,10 @@ from datasets import Dataset
 from langchain_mistralai import ChatMistralAI
 from ragas import evaluate
 from ragas.metrics import (
+    AnswerRelevancy,
     context_precision,
     context_recall,
     faithfulness,
-    response_relevancy,
 )
 
 from config import MistralSettings
@@ -27,7 +27,7 @@ from rag_pipeline import RagResult
 
 logger = logging.getLogger("phoenix_rag.evaluator")
 
-METRICS = [faithfulness, context_recall, context_precision, response_relevancy]
+METRICS = [faithfulness, context_recall, context_precision, AnswerRelevancy(strictness=1)]
 
 
 def build_ragas_dataset(
