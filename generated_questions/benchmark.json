@@ -1,65 +1,62 @@
 [
   {
     "question": "What is the primary purpose of a vector database?",
-    "reference_answer": "A vector database is a specialized storage system designed to index and query high-dimensional numerical vectors, commonly called embeddings.",
+    "reference_answer": "To index and query high-dimensional numerical vectors (embeddings) for finding similar items rather than exact matches.",
     "reference_context": "A vector database is a specialized storage system designed to index and query high-dimensional numerical vectors, commonly called embeddings.",
     "question_type": "definition"
   },
   {
-    "question": "Why do traditional relational databases perform poorly for similarity search tasks?",
-    "reference_answer": "Traditional relational databases are optimized for exact matches and range queries on structured columns, not for finding the 'most similar' items.",
-    "reference_context": "Vector databases exist because traditional relational databases, which are optimized for exact matches and range queries on structured columns, perform poorly when the task is to find the 'most similar' items in a dataset rather than an exact match.",
-    "question_type": "why"
-  },
-  {
-    "question": "Which similarity function is most commonly used for text embeddings?",
+    "question": "Which similarity measurement is most commonly used for text embeddings?",
     "reference_answer": "Cosine similarity",
     "reference_context": "Cosine similarity, which measures the angle between two vectors and ignores their magnitude. It is the most common choice for text embeddings.",
     "question_type": "factual"
   },
   {
-    "question": "What is the main trade-off when using approximate nearest neighbor (ANN) algorithms in vector databases?",
-    "reference_answer": "They trade a small amount of accuracy for large gains in query speed.",
-    "reference_context": "Vector databases solve this by using approximate nearest neighbor (ANN) algorithms that trade a small amount of accuracy for large gains in query speed.",
-    "question_type": "reasoning"
-  },
-  {
-    "question": "How does pre-filtering differ from post-filtering in metadata filtering?",
-    "reference_answer": "Pre-filtering applies metadata filters first to narrow the candidate set before similarity search, while post-filtering applies metadata filters after the similarity search runs.",
-    "reference_context": "Real-world queries are rarely 'find the 10 most similar vectors' in isolation; they are usually 'find the 10 most similar vectors where category = 'faq' and timestamp > 2024-01-01.' Vector databases support this through two strategies: Pre-filtering: the metadata filter is applied first to narrow the candidate set, and the similarity search only runs over the surviving vectors. Post-filtering: the similarity search runs first over the full index to retrieve a larger candidate set, and the metadata filter is applied afterward to the candidates.",
+    "question": "How does brute-force search compare to approximate nearest neighbor (ANN) search in terms of accuracy and scalability?",
+    "reference_answer": "Brute-force search provides perfect accuracy but scales linearly with the number of vectors, while ANN trades a small amount of accuracy for large gains in query speed.",
+    "reference_context": "Finding the exact nearest neighbor for a query vector by comparing it against every stored vector is called brute-force search... Vector databases solve this by using approximate nearest neighbor (ANN) algorithms that trade a small amount of accuracy for large gains in query speed.",
     "question_type": "comparison"
   },
   {
-    "question": "What is the default index used by Chroma?",
+    "question": "What are the four core components of most vector databases?",
+    "reference_answer": "Ingestion pipeline, Index, Metadata store, Query engine",
+    "reference_context": "Most vector databases share four core components: Ingestion pipeline, Index, Metadata store, Query engine",
+    "question_type": "factual"
+  },
+  {
+    "question": "Why might HNSW be preferred over IVF for a large-scale vector database despite its higher memory usage?",
+    "reference_answer": "HNSW typically achieves 95-99% recall while being 10-100x faster than brute-force search, making it more suitable for large collections.",
+    "reference_context": "HNSW typically achieves 95-99% recall (compared to brute-force search) while being 10-100x faster... Its main drawback is memory usage, since the full graph structure must be kept in RAM for fast traversal.",
+    "question_type": "why"
+  },
+  {
+    "question": "What is the default index type used by LanceDB?",
     "reference_answer": "HNSW",
     "reference_context": "It runs in-process (no separate server required) and uses HNSW as its default index.",
     "question_type": "factual"
   },
   {
-    "question": "How does Pinecone charge for its services?",
-    "reference_answer": "Based on the number of vectors stored and queries per second.",
-    "reference_context": "It abstracts away index selection and infrastructure management, charging based on the number of vectors stored and queries per second.",
+    "question": "How does the recall/latency trade-off affect vector database performance?",
+    "reference_answer": "Increasing search parameters improves recall but reduces queries per second (QPS).",
+    "reference_context": "Recall and latency trade off against each other for every ANN algorithm: increasing the search parameters (for example, the number of IVF cells probed, or the HNSW search width) improves recall but reduces QPS.",
+    "question_type": "reasoning"
+  },
+  {
+    "question": "What are the two most common metrics used to evaluate a vector database's retrieval quality?",
+    "reference_answer": "Recall@k and Latency (queries per second, or QPS)",
+    "reference_context": "Two metrics are most commonly used to evaluate a vector database's retrieval quality for a given configuration: Recall@k and Latency (queries per second, or QPS).",
     "question_type": "factual"
   },
   {
-    "question": "What is the purpose of the Recall@k metric in evaluating vector databases?",
-    "reference_answer": "To measure the fraction of true k nearest neighbors found in the approximate index's top-k results.",
-    "reference_context": "Recall@k: the fraction of the true k nearest neighbors (as determined by brute-force search) that appear in the approximate index's top-k results.",
-    "question_type": "definition"
-  },
-  {
     "question": "Why might re-embedding drift cause poor retrieval quality in a vector database?",
-    "reference_answer": "Because embeddings generated by one model version and queried with another do not share the same vector space.",
-    "reference_context": "if a collection's embeddings are generated by one model version and later queries are embedded with a newer or different model version, similarity scores become unreliable, because the two models do not share the same vector space.",
+    "reference_answer": "Embeddings generated by different model versions do not share the same vector space, making similarity scores unreliable.",
+    "reference_context": "Re-embedding drift: if a collection's embeddings are generated by one model version and later queries are embedded with a newer or different model version, similarity scores become unreliable, because the two models do not share the same vector space.",
     "question_type": "why"
   },
   {
-    "question": "What are two common pitfalls when using vector databases, and how do they affect performance?",
-    "reference_answer": "Mismatched distance functions reduce result quality, and under-provisioned memory for HNSW causes slower disk-backed operation or failure.",
-    "reference_context": [
-      "Mismatched distance functions: an embedding model trained for cosine similarity will produce poor results if the vector database is configured to use Euclidean distance instead",
-      "Under-provisioned memory for HNSW: because HNSW keeps its full graph in memory, a collection that grows past the available RAM will either fail to load or fall back to much slower disk-backed operation"
-    ],
-    "question_type": "multi-hop"
+    "question": "Which vector databases support payload (metadata) filtering integrated into the HNSW graph traversal?",
+    "reference_answer": "Qdrant",
+    "reference_context": "Qdrant: an open-source vector database written in Rust, designed to be run either embedded or as a standalone server, with built-in support for payload (metadata) filtering combined directly into the HNSW graph traversal rather than as a separate pre- or post-filtering step.",
+    "question_type": "comparison"
   }
 ]

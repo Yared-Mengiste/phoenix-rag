@@ -17,7 +17,8 @@ from langchain_core.documents import Document
 
 from config import MistralSettings, RetrievalConfig
 from mistralai.client import Mistral
-from vector_store import get_retriever
+
+# NOTE: 'get_retriever' import was removed because the logic is now handled directly below.
 
 logger = logging.getLogger("phoenix_rag.rag_pipeline")
 
@@ -42,12 +43,23 @@ class RagPipeline:
         self.retrieval_config = retrieval_config
         self._client = Mistral(api_key=mistral_settings.api_key)
         self._model = mistral_settings.generation_model
-        self._retriever = get_retriever(
-            vector_store,
-            top_k=retrieval_config.top_k,
-            retriever_type=retrieval_config.retriever_type,
-            similarity_threshold=retrieval_config.similarity_threshold,
-        )
+        
+        # ---------------------------------------------------------
+        # NEW RETRIEVER LOGIC INTEGRATED HERE
+        # ---------------------------------------------------------
+        if self.retrieval_config.retriever_type == "similarity_score_threshold":
+            self._retriever = vector_store.as_retriever(
+                search_type="similarity_score_threshold",
+                search_kwargs={
+                    "k": self.retrieval_config.top_k,
+                    "score_threshold": self.retrieval_config.similarity_threshold,
+                },
+            )
+        else:
+            self._retriever = vector_store.as_retriever(
+                search_type="similarity",
+                search_kwargs={"k": self.retrieval_config.top_k},
+            )
 
     def retrieve(self, question: str) -> list[Document]:
         return self._retriever.invoke(question)

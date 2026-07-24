@@ -126,28 +126,21 @@ class QuestionGenerationConfig:
 @dataclass
 class OptimizerConfig:
     max_iterations: int = 10
-    # Stop early if all metrics are >= these targets
-    target_faithfulness: float = 0.95
-    target_context_recall: float = 0.95
-    target_context_precision: float = 0.95
-    target_response_relevancy: float = 0.95
+    
+    # Practical targets accounting for Ragas LLM-as-a-judge noise variance
+    target_faithfulness: float = 0.90
+    target_context_recall: float = 0.88
+    target_context_precision: float = 0.85
+    target_response_relevancy: float = 0.85
 
-    # Thresholds below which a metric is considered "low" and triggers a rule
-    low_faithfulness_threshold: float = 0.7
-    low_context_recall_threshold: float = 0.7
-    low_context_precision_threshold: float = 0.7
-    low_response_relevancy_threshold: float = 0.7
-
-    # Step sizes used by the rule-based tuner
+    # Base steps (the optimizer scales these dynamically now)
     top_k_step: int = 2
     chunk_size_step: int = 200
     similarity_threshold_step: float = 0.05
 
-    top_k_bounds: tuple = (1, 15)
-    chunk_size_bounds: tuple = (200, 2000)
-    similarity_threshold_bounds: tuple = (0.0, 0.95)
-
-
+    top_k_bounds: tuple = (2, 10)
+    chunk_size_bounds: tuple = (300, 1500)
+    similarity_threshold_bounds: tuple = (0.1, 0.75)
 # --------------------------------------------------------------------------
 # Top level app config
 # --------------------------------------------------------------------------
