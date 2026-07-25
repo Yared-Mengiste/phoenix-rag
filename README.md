@@ -113,3 +113,37 @@ python app.py --source data/my_document.pdf --verbose
 - `results/best_configuration.json` — the best config found so far, updated
   whenever a new best is found
 
+## Troubleshooting
+
+### `ModuleNotFoundError: No module named 'langchain_community.chat_models.vertexai'`
+
+`ragas` unconditionally imports `ChatVertexAI` from
+`langchain_community.chat_models.vertexai` at import time — even though
+this project never uses Google VertexAI. That module was removed from
+recent `langchain-community` releases (VertexAI support now lives in the
+separate `langchain-google-vertexai` package), so `from ragas import
+evaluate` fails before you can even run the app.
+
+Fix: restore a stub module so the import succeeds, without pulling in the
+full VertexAI/GCP SDK just to satisfy an unused import:
+
+```bash
+mkdir -p .venv/Lib/site-packages/langchain_community/chat_models
+cat > .venv/Lib/site-packages/langchain_community/chat_models/vertexai.py << 'EOF'
+class ChatVertexAI:
+    def __init__(self, *args, **kwargs):
+        raise ImportError(
+            "ChatVertexAI requires the 'langchain-google-vertexai' package. "
+            "Install it with: pip install langchain-google-vertexai"
+        )
+EOF
+```
+
+> On macOS/Linux, the path is `.venv/lib/python3.x/site-packages/...`
+> instead of `.venv/Lib/site-packages/...`.
+
+**This stub lives inside `.venv/` and is not tracked by pip**, so it will
+be silently wiped out any time you recreate the virtual environment or run
+`pip install --upgrade langchain-community` / `pip install -r
+requirements.txt` from a clean env. If the error resurfaces, just re-run
+the two commands above.
