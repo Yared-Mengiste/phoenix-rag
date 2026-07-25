@@ -9,9 +9,9 @@
     "prompt_template": "You are a precise assistant. Answer the question directly and completely, using ONLY facts explicitly stated in the context below. Do not use outside knowledge, and do not add tangential information that was not asked for. If the context does not contain the answer, respond with \"I don't know based on the given context.\" Be concise.\n\nContext:\n{context}\n\nQuestion: {question}\n\nAnswer:"
   },
   "scores": {
-    "faithfulness": 0.8699999999999999,
+    "faithfulness": 0.8266666666666665,
     "context_recall": 0.85,
     "context_precision": 0.8333333332733334,
-    "response_relevancy": 0.7938219292324764
+    "response_relevancy": 0.7091083531081454
   }
 }

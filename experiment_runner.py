@@ -54,6 +54,7 @@ def run_experiment(app_config: AppConfig) -> dict:
     current_config = app_config.retrieval
     best_score = -1.0
     best_result: dict | None = None
+    history: list[dict] = []
 
     cached_chunk_params: tuple[int, int] | None = None
     vector_store = None
@@ -83,7 +84,7 @@ def run_experiment(app_config: AppConfig) -> dict:
         storage.append_experiment_result(iteration, current_config, scores)
 
         # ------------------------------------------------------------------
-        # NEW SCORING LOGIC: Weighted Score + Minimum Faithfulness Gate
+        # Weighted Score + Minimum Faithfulness Gate
         # ------------------------------------------------------------------
         weighted_score = (
             scores.get("faithfulness", 0.0) * 0.40 +
@@ -100,22 +101,24 @@ def run_experiment(app_config: AppConfig) -> dict:
             best_result = {"iteration": iteration, "config": current_config, "scores": scores}
             storage.save_best_configuration(iteration, current_config, scores)
             logger.info("New best configuration saved! (Weighted Score: %.4f)", best_score)
-            
+
         elif not is_safe and weighted_score > best_score:
-             logger.warning(
-                 "Iteration %d scored highest (%.4f) but failed the Faithfulness safety gate (%.4f). Discarded.", 
-                 iteration, weighted_score, scores.get("faithfulness", 0.0)
-             )
+            logger.warning(
+                "Iteration %d scored highest (%.4f) but failed the Faithfulness safety gate (%.4f). Discarded.",
+                iteration, weighted_score, scores.get("faithfulness", 0.0)
+            )
         # ------------------------------------------------------------------
 
         if meets_targets(scores, app_config.optimizer):
             logger.info("Targets met at iteration %d, stopping early", iteration)
             break
 
-        current_config, applied_rules = propose_next_config(
-            current_config, scores, app_config.optimizer
+        current_config, applied_rules, move = propose_next_config(
+            current_config, scores, app_config.optimizer, history
         )
-        
+        if move is not None:
+            history.append(move)
+
         # Overwrite the just-logged row's rule column with what actually
         # fired so evaluation_scores.csv reflects the reasoning for the
         # *next* iteration's changes.
