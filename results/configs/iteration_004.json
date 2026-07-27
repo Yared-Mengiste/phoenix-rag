@@ -2,7 +2,7 @@
   "chunk_size": 300,
   "chunk_overlap": 50,
   "top_k": 2,
-  "similarity_threshold": 0.0,
-  "retriever_type": "similarity",
+  "similarity_threshold": 0.3,
+  "retriever_type": "similarity_score_threshold",
   "prompt_template": "You are a precise assistant. Answer the question directly and completely, using ONLY facts explicitly stated in the context below. Do not use outside knowledge, and do not add tangential information that was not asked for. If the context does not contain the answer, respond with \"I don't know based on the given context.\" Be concise.\n\nContext:\n{context}\n\nQuestion: {question}\n\nAnswer:"
 }

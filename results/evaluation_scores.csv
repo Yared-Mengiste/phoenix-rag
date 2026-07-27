@@ -1,7 +1,5 @@
 iteration,faithfulness,context_recall,context_precision,response_relevancy,applied_rules
-1,0.6511111111111111,0.7,0.89999999991,0.7431368990068973,bottleneck_faithfulness: apply_strict_combined_prompt
-2,0.8099999999999999,0.7,0.69999999993,0.8133407578127839,bottleneck_recall: increase_top_k_by_2
-3,0.7444444444444445,0.85,0.8416666666112501,0.6955334298192682,bottleneck_faithfulness: prune_context_top_k_to_2
-4,0.845,0.75,0.649999999955,0.7969862454537437,bottleneck_precision: switch_retriever_to_similarity_score_threshold
-5,0.9099999999999999,0.775,0.79999999994,0.7147812484334295,bottleneck_response_relevancy: prompt_and_top_k_already_constrained
-6,0.8366666666666667,0.85,0.89999999993,0.7980485009022977,bottleneck_faithfulness: prompt_and_top_k_already_constrained
+1,0.74,0.65,0.79999999992,0.760727713222268,bottleneck_faithfulness: apply_strict_combined_prompt
+2,0.8150000000000001,0.625,0.89999999991,0.8107608265561843,bottleneck_retrieval_f1(recall_weaker): increase_top_k_by_1
+3,0.845,0.75,0.699999999955,0.7130431610421066,bottleneck_retrieval_f1(precision_weaker): switch_retriever_to_similarity_score_threshold
+4,0.8366666666666667,0.675,0.79999999994,0.7207223872575861,bottleneck_retrieval_f1(recall_weaker): increase_top_k_by_1
