@@ -79,7 +79,7 @@ def run_experiment(app_config: AppConfig) -> dict:
         scores = run_evaluation(results, benchmark, app_config.mistral)
 
         storage.save_iteration_config(iteration, current_config)
-        storage.append_evaluation_scores(iteration, scores, applied_rules=[])
+        # storage.append_evaluation_scores(iteration, scores, applied_rules=[])
         storage.append_experiment_result(iteration, current_config, scores)
 
         # ------------------------------------------------------------------
