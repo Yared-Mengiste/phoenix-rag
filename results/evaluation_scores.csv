@@ -1,7 +1,7 @@
 iteration,faithfulness,context_recall,context_precision,response_relevancy,applied_rules
-1,0.7,0.75,0.89999999991,0.6863861635358901,bottleneck_faithfulness: apply_strict_combined_prompt
-2,0.7166666666666666,0.75,0.9999999999,0.5728252518888615,bottleneck_response_relevancy: prompt_and_top_k_already_constrained
-3,0.75,0.8,0.9999999999,0.5628552792972249,bottleneck_response_relevancy: prompt_and_top_k_already_constrained
-4,0.75,0.85,0.89999999991,0.5653060920926486,bottleneck_response_relevancy: prompt_and_top_k_already_constrained
-5,0.6833333333333333,0.75,0.89999999991,0.6474696494292792,bottleneck_faithfulness: prompt_and_top_k_already_constrained
-6,0.65,0.75,0.89999999991,0.6384625952088612,bottleneck_faithfulness: prompt_and_top_k_already_constrained
+1,0.8151515151515152,0.7,0.89999999991,0.7865593178774155,bottleneck_faithfulness: apply_strict_combined_prompt
+2,0.75,0.75,0.9999999999,0.5418846829503293,bottleneck_response_relevancy: llm_refined_prompt_from_document_summary
+3,0.675,0.75,0.9999999999,0.6659051582528508,bottleneck_faithfulness: all_generation_levers_exhausted
+4,0.75,0.75,0.89999999991,0.5652855964664021,bottleneck_response_relevancy: all_generation_levers_exhausted
+5,0.6833333333333333,0.7,0.89999999991,0.6606561264775485,bottleneck_faithfulness: all_generation_levers_exhausted
+6,0.6583333333333333,0.75,0.9999999999,0.6506827316242775,bottleneck_faithfulness: all_generation_levers_exhausted

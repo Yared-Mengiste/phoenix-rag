@@ -157,7 +157,7 @@ class AppConfig:
     source_document: str = str(DATA_DIR / "source.pdf")
     faiss_index_path: str = str(DATA_DIR / "faiss_index")
     benchmark_path: str = str(GENERATED_QUESTIONS_DIR / "benchmark.json")
-
+    summary_path: str = str(GENERATED_QUESTIONS_DIR / "document_summary.txt")   # <-- add this line
     def save(self, path: str | Path) -> None:
         path = Path(path)
         path.write_text(json.dumps(_dataclass_to_json_safe(self), indent=2))
@@ -176,6 +176,9 @@ class AppConfig:
             faiss_index_path=data.get("faiss_index_path", str(DATA_DIR / "faiss_index")),
             benchmark_path=data.get(
                 "benchmark_path", str(GENERATED_QUESTIONS_DIR / "benchmark.json")
+            ),
+            summary_path=data.get(
+                "summary_path", str(GENERATED_QUESTIONS_DIR / "document_summary.txt")
             ),
         )
 

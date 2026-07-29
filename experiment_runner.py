@@ -7,6 +7,8 @@ Orchestrates the full self-optimization loop:
        rebuilt per-iteration only when chunk_size/overlap change).
     2. Generate (or load cached) the fixed benchmark question set from
        the FULL document.
+    2b. Generate (or load cached) a document summary, used by the
+        optimizer's LLM-driven prompt-refinement fallback.
     3. For each iteration:
         a. Build a RAG pipeline with the current retrieval config.
         b. Answer every benchmark question.
@@ -27,6 +29,7 @@ from chunking import split_documents
 from embeddings import MistralEmbeddings
 from vector_store import build_vector_store
 from question_generator import get_or_create_benchmark
+from document_summarizer import get_or_create_summary
 from rag_pipeline import RagPipeline
 from evaluator import run_evaluation
 from optimizer import meets_targets, propose_next_config
@@ -51,9 +54,21 @@ def run_experiment(app_config: AppConfig) -> dict:
     question_texts = [q.question for q in benchmark]
     logger.info("Benchmark ready: %d fixed evaluation questions", len(benchmark))
 
+    # Document summary, cached the same way -- used only as context for the
+    # optimizer's LLM-driven prompt-refinement fallback (see optimizer.py,
+    # prompt_refiner.py). Cheap: generated once per document, reused across
+    # every iteration and every future run against this same document.
+    document_summary = get_or_create_summary(
+        full_text=full_text,
+        mistral_settings=app_config.mistral,
+        summary_path=app_config.summary_path,
+    )
+    logger.info("Document summary ready (%d chars)", len(document_summary))
+
     current_config = app_config.retrieval
     best_score = -1.0
     best_result: dict | None = None
+    optimizer_state: dict = {"prompt_tier": 0, "top_k_pruned": False}
 
     cached_chunk_params: tuple[int, int] | None = None
     vector_store = None
@@ -79,11 +94,10 @@ def run_experiment(app_config: AppConfig) -> dict:
         scores = run_evaluation(results, benchmark, app_config.mistral)
 
         storage.save_iteration_config(iteration, current_config)
-        # storage.append_evaluation_scores(iteration, scores, applied_rules=[])
         storage.append_experiment_result(iteration, current_config, scores)
 
         # ------------------------------------------------------------------
-        # NEW SCORING LOGIC: Weighted Score + Minimum Faithfulness Gate
+        # Weighted Score + Minimum Faithfulness Gate
         # ------------------------------------------------------------------
         weighted_score = (
             scores.get("faithfulness", 0.0) * 0.40 +
@@ -92,7 +106,6 @@ def run_experiment(app_config: AppConfig) -> dict:
             scores.get("response_relevancy", 0.0) * 0.20
         )
 
-        # A configuration is only eligible if it hits a baseline of 0.80 Faithfulness
         is_safe = scores.get("faithfulness", 0.0) >= 0.80
 
         if is_safe and weighted_score > best_score:
@@ -100,25 +113,27 @@ def run_experiment(app_config: AppConfig) -> dict:
             best_result = {"iteration": iteration, "config": current_config, "scores": scores}
             storage.save_best_configuration(iteration, current_config, scores)
             logger.info("New best configuration saved! (Weighted Score: %.4f)", best_score)
-            
+
         elif not is_safe and weighted_score > best_score:
-             logger.warning(
-                 "Iteration %d scored highest (%.4f) but failed the Faithfulness safety gate (%.4f). Discarded.", 
-                 iteration, weighted_score, scores.get("faithfulness", 0.0)
-             )
+            logger.warning(
+                "Iteration %d scored highest (%.4f) but failed the Faithfulness safety gate (%.4f). Discarded.",
+                iteration, weighted_score, scores.get("faithfulness", 0.0)
+            )
         # ------------------------------------------------------------------
 
         if meets_targets(scores, app_config.optimizer):
             logger.info("Targets met at iteration %d, stopping early", iteration)
             break
 
-        current_config, applied_rules = propose_next_config(
-            current_config, scores, app_config.optimizer
+        current_config, applied_rules, optimizer_state = propose_next_config(
+            current_config,
+            scores,
+            app_config.optimizer,
+            mistral_settings=app_config.mistral,
+            document_summary=document_summary,
+            state=optimizer_state,
         )
-        
-        # Overwrite the just-logged row's rule column with what actually
-        # fired so evaluation_scores.csv reflects the reasoning for the
-        # *next* iteration's changes.
+
         storage.append_evaluation_scores(iteration, scores, applied_rules=applied_rules)
 
         if not applied_rules:
