@@ -7,16 +7,23 @@ Orchestrates the full self-optimization loop:
        rebuilt per-iteration only when chunk_size/overlap change).
     2. Generate (or load cached) the fixed benchmark question set from
        the FULL document.
-    2b. Generate (or load cached) a document summary, used by the
-        optimizer's LLM-driven prompt-refinement fallback.
+    2b. Generate (or load cached) a document summary. Fed to the LLM
+        optimizer on every iteration so it can tailor the prompt template
+        it writes to what the source document actually is.
     3. For each iteration:
         a. Build a RAG pipeline with the current retrieval config.
         b. Answer every benchmark question.
         c. Score answers with Ragas.
         d. Persist config + scores.
         e. Track the best-performing configuration so far (with safety gates).
-        f. Ask the optimizer to propose the next configuration.
+        f. Ask the LLM optimizer to propose the next configuration -- it
+           sees the FULL iteration history plus the document summary, and
+           proposes retrieval params AND the prompt template together.
         g. Stop early if targets are met or max_iterations is reached.
+
+The rule-based optimizer (optimizer.propose_next_config) and the standalone
+prompt refiner (prompt_refiner.refine_prompt) are no longer part of this
+loop -- propose_next_config_llm is the only proposer used.
 """
 
 from __future__ import annotations
@@ -32,7 +39,8 @@ from question_generator import get_or_create_benchmark
 from document_summarizer import get_or_create_summary
 from rag_pipeline import RagPipeline
 from evaluator import run_evaluation
-from optimizer import meets_targets, propose_next_config
+from optimizer import meets_targets
+from llm_optimizer import propose_next_config_llm
 import storage
 
 logger = logging.getLogger("phoenix_rag.experiment_runner")
@@ -54,10 +62,6 @@ def run_experiment(app_config: AppConfig) -> dict:
     question_texts = [q.question for q in benchmark]
     logger.info("Benchmark ready: %d fixed evaluation questions", len(benchmark))
 
-    # Document summary, cached the same way -- used only as context for the
-    # optimizer's LLM-driven prompt-refinement fallback (see optimizer.py,
-    # prompt_refiner.py). Cheap: generated once per document, reused across
-    # every iteration and every future run against this same document.
     document_summary = get_or_create_summary(
         full_text=full_text,
         mistral_settings=app_config.mistral,
@@ -68,7 +72,11 @@ def run_experiment(app_config: AppConfig) -> dict:
     current_config = app_config.retrieval
     best_score = -1.0
     best_result: dict | None = None
-    optimizer_state: dict = {"prompt_tier": 0, "top_k_pruned": False}
+
+    # Full iteration history -- config + scores + what was tried each
+    # round. Passed to the LLM optimizer so it can see trade-offs across
+    # the whole run, not just the current iteration.
+    history: list[dict] = []
 
     cached_chunk_params: tuple[int, int] | None = None
     vector_store = None
@@ -123,18 +131,33 @@ def run_experiment(app_config: AppConfig) -> dict:
 
         if meets_targets(scores, app_config.optimizer):
             logger.info("Targets met at iteration %d, stopping early", iteration)
+            history.append({
+                "iteration": iteration,
+                "config": current_config.to_dict(),
+                "scores": scores,
+                "applied_rules": "all_targets_met",
+            })
+            storage.append_evaluation_scores(iteration, scores, applied_rules=["all_targets_met"])
             break
 
-        current_config, applied_rules, optimizer_state = propose_next_config(
+        next_config, applied_rules = propose_next_config_llm(
             current_config,
             scores,
             app_config.optimizer,
-            mistral_settings=app_config.mistral,
-            document_summary=document_summary,
-            state=optimizer_state,
+            app_config.mistral,
+            history,
+            document_summary,
         )
 
+        history.append({
+            "iteration": iteration,
+            "config": current_config.to_dict(),
+            "scores": scores,
+            "applied_rules": "; ".join(applied_rules),
+        })
         storage.append_evaluation_scores(iteration, scores, applied_rules=applied_rules)
+
+        current_config = next_config
 
         if not applied_rules:
             logger.info("No further tuning rules triggered, stopping")

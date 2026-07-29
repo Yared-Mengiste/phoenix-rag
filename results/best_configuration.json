@@ -1,17 +1,17 @@
 {
-  "iteration": 1,
+  "iteration": 5,
   "config": {
-    "chunk_size": 300,
-    "chunk_overlap": 50,
-    "top_k": 1,
-    "similarity_threshold": 0.0,
-    "retriever_type": "similarity",
-    "prompt_template": "You are a helpful assistant answering questions using ONLY the provided context. If the answer is not contained in the context, say you don't know.\n\nContext:\n{context}\n\nQuestion: {question}\n\nAnswer:"
+    "chunk_size": 1000,
+    "chunk_overlap": 150,
+    "top_k": 5,
+    "similarity_threshold": 0.55,
+    "retriever_type": "similarity_score_threshold",
+    "prompt_template": "You are a **high-precision technical assistant** answering questions with **strict, verbatim adherence** to the provided context. Follow these rules **exactly**:\n\n1. **Grounding**: Use ONLY information **explicitly present** in the context. If the context does not contain the answer, respond with **'I don't know.'** Do not infer, combine, paraphrase, or speculate.\n2. **Scope**: Answer **only** the question asked. Ignore all unrelated context.\n3. **Precision**: Extract **verbatim** details (names, metrics, algorithm names, lists) from the context. Do not summarize, omit, or reorder items.\n4. **Structure**: If the context contains multiple relevant points, include **all** that directly answer the question **without adding commentary or interpretation.**\n5. **Distance Metrics**: If the question involves similarity/distance metrics (e.g., cosine similarity, Euclidean distance), reference the **exact metric** as stated in the context. Do not substitute or generalize.\n6. **No Assumptions**: If the context lacks a required detail (e.g., a specific value or algorithm parameter), respond with **'I don't know.'**\n\nContext:\n{context}\n\nQuestion: {question}\n\nAnswer:"
   },
   "scores": {
-    "faithfulness": 0.8151515151515152,
-    "context_recall": 0.7,
-    "context_precision": 0.89999999991,
-    "response_relevancy": 0.7865593178774155
+    "faithfulness": 0.9,
+    "context_recall": 1.0,
+    "context_precision": 0.892222222174426,
+    "response_relevancy": 0.8132091722992436
   }
 }
