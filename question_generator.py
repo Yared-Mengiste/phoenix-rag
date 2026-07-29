@@ -18,6 +18,11 @@ Workflow:
     3. Merge all batches, deduplicate near-identical questions.
     4. Persist to disk. Later runs load this file instead of regenerating
        it (unless `regenerate_each_iteration` / `force` is set).
+
+Generation calls go through MistralClient (mistral_client.py) rather than
+a raw SDK client, so rate limiting and retry/backoff actually apply here.
+Without this, a 429 mid-batch is caught by the broad except-Exception below
+and that batch's questions are silently lost rather than retried.
 """
 
 from __future__ import annotations
@@ -29,7 +34,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from config import MistralSettings, QuestionGenerationConfig
-from mistralai.client import Mistral
+from mistral_client import MistralClient
 
 logger = logging.getLogger("phoenix_rag.question_generator")
 
@@ -91,7 +96,7 @@ def _parse_llm_json(raw: str) -> list[dict]:
 
 
 def _generate_for_batch(
-    client: Mistral,
+    client: MistralClient,
     batch_text: str,
     qg_config: QuestionGenerationConfig,
     mistral_settings: MistralSettings,
@@ -101,15 +106,17 @@ def _generate_for_batch(
         f"Generate {qg_config.questions_per_batch} questions from this text:\n\n"
         f"{batch_text}"
     )
-    response = client.chat.complete(
-        model=mistral_settings.generation_model,
+    # MistralClient.chat() handles rate limiting + exponential-backoff retry
+    # internally and returns the answer text directly (not a raw SDK
+    # response object needing .choices[0].message.content).
+    raw = client.chat(
         messages=[
             {"role": "system", "content": system},
             {"role": "user", "content": user},
         ],
+        model=mistral_settings.generation_model,
         temperature=0.4,
     )
-    raw = response.choices[0].message.content
     items = _parse_llm_json(raw)
 
     questions = []
@@ -126,6 +133,7 @@ def _generate_for_batch(
         except (KeyError, TypeError):
             logger.warning("Skipping malformed question item: %s", item)
     return questions
+
 
 def _dedupe(questions: list[BenchmarkQuestion]) -> list[BenchmarkQuestion]:
     """Remove exact/near-exact duplicate questions (case/whitespace-insensitive).
@@ -151,7 +159,7 @@ def generate_benchmark(
     qg_config: QuestionGenerationConfig,
 ) -> list[BenchmarkQuestion]:
     """Generate the full benchmark question set from the complete document."""
-    client = Mistral(api_key=mistral_settings.api_key)
+    client = MistralClient(mistral_settings)
     batches = _batch_text(full_text, qg_config.batch_size_chars)
     logger.info("Generating questions from %d batch(es)", len(batches))
 
@@ -160,8 +168,8 @@ def generate_benchmark(
         logger.info("Generating questions for batch %d/%d", i, len(batches))
         try:
             all_questions.extend(
-    _generate_for_batch(client, batch, qg_config, mistral_settings)
-)
+                _generate_for_batch(client, batch, qg_config, mistral_settings)
+            )
         except Exception:
             logger.exception(
                 "Batch %d failed to generate questions; continuing with remaining "
