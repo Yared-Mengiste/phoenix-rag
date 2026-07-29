@@ -1,17 +1,17 @@
 {
-  "iteration": 3,
+  "iteration": 1,
   "config": {
     "chunk_size": 300,
     "chunk_overlap": 50,
-    "top_k": 3,
+    "top_k": 1,
     "similarity_threshold": 0.0,
     "retriever_type": "similarity",
-    "prompt_template": "You are a precise assistant. Answer the question directly and completely, using ONLY facts explicitly stated in the context below. Do not use outside knowledge, and do not add tangential information that was not asked for. If the context does not contain the answer, respond with \"I don't know based on the given context.\" Be concise.\n\nContext:\n{context}\n\nQuestion: {question}\n\nAnswer:"
+    "prompt_template": "You are a helpful assistant answering questions using ONLY the provided context. If the answer is not contained in the context, say you don't know.\n\nContext:\n{context}\n\nQuestion: {question}\n\nAnswer:"
   },
   "scores": {
-    "faithfulness": 0.9099999999999999,
-    "context_recall": 0.8,
-    "context_precision": 0.8333333332783333,
-    "response_relevancy": 0.7095000703670555
+    "faithfulness": 0.8333333333333334,
+    "context_recall": 0.75,
+    "context_precision": 0.89999999991,
+    "response_relevancy": 0.6865533242109616
   }
 }

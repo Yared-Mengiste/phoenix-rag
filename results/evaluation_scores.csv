@@ -1,5 +1,7 @@
 iteration,faithfulness,context_recall,context_precision,response_relevancy,applied_rules
-1,0.7316666666666667,0.6,0.79999999992,0.7676558560961009,bottleneck_retrieval_f1(recall_weaker): increase_top_k_by_2
-2,0.7751515151515151,0.85,0.8833333332775,0.8596359109279341,bottleneck_faithfulness: apply_strict_combined_prompt
-3,0.9099999999999999,0.8,0.8333333332783333,0.7095000703670555,bottleneck_response_relevancy: prune_context_top_k_to_2
-4,0.9066666666666666,0.75,0.799999999945,0.628911160351071,bottleneck_response_relevancy: prompt_and_top_k_already_constrained
+1,0.8333333333333334,0.75,0.89999999991,0.6865533242109616,bottleneck_response_relevancy: apply_strict_combined_prompt
+2,0.6666666666666666,0.75,0.9999999999,0.5752328607626139,bottleneck_response_relevancy: prompt_and_top_k_already_constrained
+3,0.6583333333333333,0.7,0.9999999999,0.6507182405295914,bottleneck_faithfulness: prompt_and_top_k_already_constrained
+4,0.75,0.75,0.89999999991,0.5602121985497,bottleneck_response_relevancy: prompt_and_top_k_already_constrained
+5,0.6833333333333333,0.85,0.79999999992,0.6330739218306188,bottleneck_response_relevancy: prompt_and_top_k_already_constrained
+6,0.6833333333333333,0.75,0.9999999999,0.6468431398715514,bottleneck_faithfulness: prompt_and_top_k_already_constrained

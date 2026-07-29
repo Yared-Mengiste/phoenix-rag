@@ -16,7 +16,7 @@ import time
 from collections import deque
 from typing import Any
 
-from mistralai import Mistral
+from mistralai.client import Mistral
 
 from config import MistralSettings
 

@@ -47,7 +47,7 @@ class MistralSettings:
     judge_model: str = "mistral-small-latest"
 
     # Free-tier rate limiting (requests per minute). Adjust to your plan.
-    requests_per_minute: int = 55
+    requests_per_minute: int = 45
     max_retries: int = 5
     base_backoff_seconds: float = 2.0
 
