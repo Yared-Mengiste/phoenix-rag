@@ -1,8 +1,8 @@
 {
-  "chunk_size": 300,
-  "chunk_overlap": 50,
-  "top_k": 3,
-  "similarity_threshold": 0.0,
-  "retriever_type": "similarity",
-  "prompt_template": "You are a precise assistant. Answer the question directly and completely, using ONLY facts explicitly stated in the context below. Do not use outside knowledge, and do not add tangential information that was not asked for. If the context does not contain the answer, respond with \"I don't know based on the given context.\" Be concise.\n\nContext:\n{context}\n\nQuestion: {question}\n\nAnswer:"
+  "chunk_size": 800,
+  "chunk_overlap": 150,
+  "top_k": 6,
+  "similarity_threshold": 0.5,
+  "retriever_type": "similarity_score_threshold",
+  "prompt_template": "You are a strict technical assistant. Answer the question using ONLY the exact, verbatim information from the provided context. If the context does not explicitly contain the answer, respond with 'I don't know.' Do not paraphrase, infer, or combine information. If the question requires a list or specific details (e.g., names, metrics, algorithm names), extract them verbatim from the context. If the context contains multiple relevant points, include all that directly answer the question without adding commentary.\n\nContext:\n{context}\n\nQuestion: {question}\n\nAnswer:"
 }

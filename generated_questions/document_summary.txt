@@ -1,0 +1,32 @@
+### **Technical Summary: Vector Databases – A Technical Overview**
+
+This document provides a comprehensive technical overview of **vector databases**, specialized systems designed for indexing and querying high-dimensional numerical vectors (embeddings) generated from unstructured data (text, images, audio) via machine learning models. Unlike traditional relational databases, which excel at exact matches and structured queries, vector databases optimize for **approximate nearest neighbor (ANN) search**, enabling efficient similarity-based retrieval.
+
+#### **Key Sections & Topics**
+1. **Introduction** – Defines vector databases, their purpose (handling embeddings), and limitations of traditional databases for similarity search.
+2. **Why Similarity Search Is Different** – Explains distance/similarity metrics (cosine similarity, Euclidean distance, dot product) and the inefficiency of brute-force search, introducing ANN algorithms as a scalable alternative.
+3. **Core Architecture** – Describes the four main components:
+   - **Ingestion pipeline** (validates and stores vectors)
+   - **Index** (critical for performance, using structures like HNSW or IVF)
+   - **Metadata store** (for filtering)
+   - **Query engine** (executes filtered similarity searches)
+4. **Indexing Algorithms** – Details three major ANN methods:
+   - **HNSW (Hierarchical Navigable Small World)**: Graph-based, high recall (95–99%), memory-intensive.
+   - **IVF (Inverted File Index)**: Cluster-based, memory-efficient but accuracy depends on probing.
+   - **Flat (Brute-Force)**: Exact but slow for large datasets.
+5. **Metadata Filtering** – Compares pre-filtering (slower but accurate) and post-filtering (faster but may reduce results).
+6. **Popular Implementations** – Profiles **Chroma** (embedded, HNSW-based), **FAISS** (optimized library), **Pinecone** (managed cloud service), **Qdrant** (Rust-based, metadata-integrated HNSW), and **Weaviate** (auto-embedding with GraphQL).
+7. **Evaluating Retrieval Quality** – Introduces **Recall@k** (accuracy vs. brute-force) and **latency (QPS)** trade-offs.
+8. **Common Pitfalls** – Warns against mismatched distance functions, re-embedding drift, HNSW memory constraints, and ignoring recall/latency trade-offs.
+
+#### **Factual Claims & Terminology**
+- Vector databases rely on **embeddings** (fixed-length float arrays) from ML models.
+- **ANN algorithms** (HNSW, IVF) trade accuracy for speed, scaling beyond brute-force limits (~1M vectors).
+- **Recall@k** measures how many true nearest neighbors are retrieved; **QPS** measures query throughput.
+- **FAISS** is a library, not a standalone database, often used as an underlying engine.
+- **HNSW** is the default index in Chroma, Qdrant, and Weaviate due to its speed/recall balance.
+
+#### **Document Structure**
+The document follows a **logical progression**: from defining the problem (similarity search) to detailing solutions (indexing algorithms), practical implementations, and evaluation metrics. It concludes with warnings about common deployment mistakes, emphasizing the importance of aligning embedding models, distance metrics, and indexing strategies.
+
+**Purpose**: This is a **technical reference** for engineers and architects evaluating or implementing vector databases, balancing depth with clarity on trade-offs.

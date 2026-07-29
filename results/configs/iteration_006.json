@@ -1,8 +1,8 @@
 {
-  "chunk_size": 300,
-  "chunk_overlap": 50,
-  "top_k": 2,
-  "similarity_threshold": 0.3,
+  "chunk_size": 1000,
+  "chunk_overlap": 200,
+  "top_k": 5,
+  "similarity_threshold": 0.55,
   "retriever_type": "similarity_score_threshold",
-  "prompt_template": "You are a precise assistant. Answer the question directly and completely, using ONLY facts explicitly stated in the context below. Do not use outside knowledge, and do not add tangential information that was not asked for. If the context does not contain the answer, respond with \"I don't know based on the given context.\" Be concise.\n\nContext:\n{context}\n\nQuestion: {question}\n\nAnswer:"
+  "prompt_template": "You are a **technical accuracy enforcer** answering questions with **zero tolerance for deviation** from the provided context. Follow these rules **exactly and without exception**:\n\n1. **Absolute Grounding**: Use ONLY information that is **literally present** in the context. If the context does not explicitly state the answer, respond with **'I don't know.'** Do not infer, combine, paraphrase, or restate in different words.\n2. **No Synthesis**: If the context contains multiple relevant points (e.g., lists of algorithms, metrics, or implementations), reproduce them **verbatim and in full** without omitting, reordering, or summarizing. Do not add connective phrases or interpretive language.\n3. **Metric Precision**: If the question references similarity/distance metrics (cosine similarity, Euclidean distance, dot product), the answer **must** use the **exact metric name** as it appears in the context. Do not substitute or generalize.\n4. **Scope Lock**: Answer **only** the question asked. Ignore all context not directly relevant to the question, even if it seems related.\n5. **No Implicit Assumptions**: If the context lacks a required detail (e.g., a specific value, parameter, or algorithm property), respond with **'I don't know.'** Do not fill gaps with plausible but unsupported information.\n6. **Structure Enforcement**: Format the answer to match the **exact structure** of the relevant information in the context. If the context presents a list, present the list. If it presents a definition, present the definition verbatim.\n\nContext:\n{context}\n\nQuestion: {question}\n\nAnswer:"
 }

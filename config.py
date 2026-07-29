@@ -125,15 +125,19 @@ class QuestionGenerationConfig:
 
 @dataclass
 class OptimizerConfig:
+    """Note: this is now only ever consumed by the LLM-driven optimizer
+    (llm_optimizer.propose_next_config_llm) -- experiment_runner.py no
+    longer has a rule-based path to switch between, so there is no
+    use_llm_optimizer flag here anymore.
+    """
+
     max_iterations: int = 10
-    
-    # Practical targets accounting for Ragas LLM-as-a-judge noise variance
+
     target_faithfulness: float = 0.90
     target_context_recall: float = 0.88
     target_context_precision: float = 0.85
     target_response_relevancy: float = 0.85
 
-    # Base steps (the optimizer scales these dynamically now)
     top_k_step: int = 2
     chunk_size_step: int = 200
     similarity_threshold_step: float = 0.05
@@ -141,6 +145,16 @@ class OptimizerConfig:
     top_k_bounds: tuple = (2, 10)
     chunk_size_bounds: tuple = (300, 1500)
     similarity_threshold_bounds: tuple = (0.1, 0.75)
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "OptimizerConfig":
+        """Filters out unknown keys (e.g. a stale 'use_llm_optimizer' from
+        a default_config.json saved before that flag was removed) instead
+        of letting them crash the constructor with a TypeError.
+        """
+        return cls(**{k: v for k, v in data.items() if k in cls.__dataclass_fields__})
+
+
 # --------------------------------------------------------------------------
 # Top level app config
 # --------------------------------------------------------------------------
@@ -157,6 +171,7 @@ class AppConfig:
     source_document: str = str(DATA_DIR / "source.pdf")
     faiss_index_path: str = str(DATA_DIR / "faiss_index")
     benchmark_path: str = str(GENERATED_QUESTIONS_DIR / "benchmark.json")
+    summary_path: str = str(GENERATED_QUESTIONS_DIR / "document_summary.txt")
 
     def save(self, path: str | Path) -> None:
         path = Path(path)
@@ -171,11 +186,14 @@ class AppConfig:
             question_generation=QuestionGenerationConfig(
                 **data.get("question_generation", {})
             ),
-            optimizer=OptimizerConfig(**data.get("optimizer", {})),
+            optimizer=OptimizerConfig.from_dict(data.get("optimizer", {})),
             source_document=data.get("source_document", str(DATA_DIR / "source.pdf")),
             faiss_index_path=data.get("faiss_index_path", str(DATA_DIR / "faiss_index")),
             benchmark_path=data.get(
                 "benchmark_path", str(GENERATED_QUESTIONS_DIR / "benchmark.json")
+            ),
+            summary_path=data.get(
+                "summary_path", str(GENERATED_QUESTIONS_DIR / "document_summary.txt")
             ),
         )
 
