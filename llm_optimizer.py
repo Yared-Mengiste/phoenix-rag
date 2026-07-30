@@ -227,7 +227,7 @@ def propose_next_config_llm(
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": user_message},
         ],
-        model=mistral_settings.generation_model,
+        model=mistral_settings.optimizer_model,
         temperature=0.4,
     )
 
