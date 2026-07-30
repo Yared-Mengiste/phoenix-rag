@@ -59,7 +59,7 @@ vector_store.py           FAISS index build/save/load + retriever factory
 question_generator.py    Generates + caches the fixed benchmark question set
 rag_pipeline.py           Retrieve → prompt → generate
 evaluator.py              Ragas evaluation using Mistral as judge
-optimizer.py              Rule-based retrieval parameter tuning
+llm_optimizer.py          LLM based retrieval parameter tuning
 storage.py                Persists configs / results / scores / best config
 experiment_runner.py      Orchestrates the full optimization loop
 config/                   Default saved AppConfig JSON
